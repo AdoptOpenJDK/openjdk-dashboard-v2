@@ -1,0 +1,19 @@
+.filters-box {
+    contain: content;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.filters {
+    contain: content;
+    padding: 10px 20px;
+}
+
+.column {
+    float: left;
+    padding: 0px 20px;
+}
+
+.column label {
+    display: block;
+}
