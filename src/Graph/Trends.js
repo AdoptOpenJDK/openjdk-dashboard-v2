@@ -12,11 +12,13 @@ export default class Trends extends Component {
         series2: undefined,
         categories: undefined,
         args: {
+            type: 'daily',
             source: undefined,
             feature_version: undefined,
             jvm_impl: undefined
         },
         args2: {
+            type: 'daily',
             source: undefined,
             feature_version: undefined,
             jvm_impl: undefined
@@ -25,10 +27,10 @@ export default class Trends extends Component {
 
     async componentDidMount() {
         this.updateData(1, this.state.args);
-        this.updateData(2, this.state.args2);
+        this.updateData(2, this.state.args2, false);
     }
 
-    async updateData(seriesID, args) {
+    async updateData(seriesID, args, visible = true) {
         let params = {}
         if(args.source) params.source = args.source
         if(args.feature_version) params.feature_version = args.feature_version
@@ -40,18 +42,23 @@ export default class Trends extends Component {
             const categories = data.map(({ date }) => moment(date).format('DD-MM-YYYY'));
 
             switch(seriesID) {   
-                case 1: this.setState({categories, series: this.processData(seriesID, data, true)}); break;
-                case 2: this.setState({categories, series2: this.processData(seriesID, data, true)}); break;
+                case 1: this.setState({categories, series: this.processData(seriesID, data, args.type, visible)}); break;
+                case 2: this.setState({categories, series2: this.processData(seriesID, data, args.type, visible)}); break;
             }
         }
     }
 
-    processData(seriesID, data, visibleTatal = false) {
-        const daily = data.map(({ daily }) => daily);
+    processData(seriesID, data, type, visibleTatal = false) {
+        
+        var typeData;
+        switch(type) {
+            case 'daily': typeData = data.map(({ daily }) => daily); break;
+            case 'total': typeData = data.map(({ total }) => total); break;
+        }
 
         const series = [{
-            name: "Series" + seriesID,
-            data: daily,
+            name: "Series " + seriesID,
+            data: typeData,
             visible: visibleTatal
         }];
         return series;
@@ -59,6 +66,17 @@ export default class Trends extends Component {
 
     renderFilters(seriesID, args) {
         return <div className="filters">
+            <div className="column">
+                <div>Type</div>
+                <Radio.Group name={"source"}
+                    defaultValue={args.type}
+                    onChange={e => {args.type = e.target.value; this.updateData(seriesID, args)}}
+                    options={[
+                        { label: 'Daily', value: 'daily' },
+                        { label: 'Total', value: 'total' }
+                    ]}
+                />
+            </div>
             <div className="column">
                 <div>Source</div>
                 <Radio.Group name={"source"}
