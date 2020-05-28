@@ -1,11 +1,10 @@
 import { get } from "./utils";
 
-//address = "https://api.adoptopenjdk.net/"
-//address = "https://localhost:8080/"
+//var address = "https://api.adoptopenjdk.net/"
+var address = "http://localhost:8080/"
 
-// temporary
 export const api = {
-    downloads: (jdkVersion = "") => get(`http://localhost:8080/v3/stats/downloads/total/${jdkVersion}`),
-    tracking: ({ source, feature_version, jvm_impl, docker_repo, ...rest }) => get(`http://localhost:8080/v3/stats/downloads/tracking/`, { source, feature_version, jvm_impl, docker_repo, ...rest }),
-    monthly: ({ source, feature_version, jvm_impl, docker_repo, ...rest }) => get(`http://localhost:8080/v3/stats/downloads/monthly/`, { source, feature_version, jvm_impl, docker_repo, ...rest })
+    downloads: (jdkVersion = "") => get(`${address}v3/stats/downloads/total/${jdkVersion}`),
+    tracking: ({ source, feature_version, jvm_impl, docker_repo, ...rest }) => get(`${address}v3/stats/downloads/tracking/`, { source, feature_version, jvm_impl, docker_repo, ...rest }),
+    monthly: ({ source, feature_version, jvm_impl, docker_repo, ...rest }) => get(`${address}v3/stats/downloads/monthly/`, { source, feature_version, jvm_impl, docker_repo, ...rest })
 };
