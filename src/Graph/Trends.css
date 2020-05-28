@@ -11,9 +11,14 @@
 
 .column {
     float: left;
-    padding: 0px 20px;
+    padding: 0px 10px;
 }
 
 .column label {
     display: block;
+}
+
+p {
+    padding-top: 20px;
+    padding-left: 50px;
 }
