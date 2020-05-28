@@ -5,6 +5,6 @@ var address = "http://localhost:8080/"
 
 export const api = {
     downloads: (jdkVersion = "") => get(`${address}v3/stats/downloads/total/${jdkVersion}`),
-    tracking: ({ source, feature_version, jvm_impl, docker_repo, ...rest }) => get(`${address}v3/stats/downloads/tracking/`, { source, feature_version, jvm_impl, docker_repo, ...rest }),
-    monthly: ({ source, feature_version, jvm_impl, docker_repo, ...rest }) => get(`${address}v3/stats/downloads/monthly/`, { source, feature_version, jvm_impl, docker_repo, ...rest })
+    tracking: ({ source, feature_version, jvm_impl, days, ...rest }) => get(`${address}v3/stats/downloads/tracking/`, { source, feature_version, jvm_impl, days, ...rest }),
+    monthly: ({ source, feature_version, jvm_impl, ...rest }) => get(`${address}v3/stats/downloads/monthly/`, { source, feature_version, jvm_impl, ...rest })
 };

@@ -3,8 +3,7 @@ import { api } from "../api";
 import LineChart from "./LineChart";
 import BarChart from "./BarChart";
 import moment from 'moment';
-import { Button, Radio, Checkbox } from 'antd';
-import { Stats } from 'fs';
+import { Radio, Slider } from 'antd';
 import './Trends.css';
 
 export default class Trends extends Component {
@@ -17,13 +16,15 @@ export default class Trends extends Component {
             type: 'daily',
             source: undefined,
             feature_version: undefined,
-            jvm_impl: undefined
+            jvm_impl: undefined,
+            days: 30
         },
         args2: {
             type: 'daily',
             source: undefined,
             feature_version: undefined,
-            jvm_impl: undefined
+            jvm_impl: undefined,
+            days: 30
         },
         monthlyArgs: {
             type: 'monthly',
@@ -83,6 +84,7 @@ export default class Trends extends Component {
         if(args.source) params.source = args.source
         if(args.feature_version) params.feature_version = args.feature_version
         if(args.jvm_impl) params.jvm_impl = args.jvm_impl
+        if(args.days) params.days = args.days
 
         return params;
     }
@@ -154,6 +156,14 @@ export default class Trends extends Component {
                 />
             </div>
             {this.renderFilters(args, updateFunc)}
+            <div className="column days">
+                <div>Days</div>
+                <Slider 
+                    defaultValue={args.days} 
+                    max={180}
+                    onAfterChange={value => {args.days = value; updateFunc()}}
+                />
+            </div>
         </div>
     }
 
