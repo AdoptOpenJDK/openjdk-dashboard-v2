@@ -36,16 +36,11 @@ export default class Trends extends Component {
     async componentDidMount() {
         this.updateData(1, this.state.args);
         this.updateData(2, this.state.args2, false);
-        this.updateMonthlyData();
+        this.updateMonthlyData(this.state.monthlyArgs);
     }
 
     async updateData(seriesID, args, visible = true) {
-        let params = {}
-        if(args.source) params.source = args.source
-        if(args.feature_version) params.feature_version = args.feature_version
-        if(args.jvm_impl) params.jvm_impl = args.jvm_impl
-
-        const data = await api.tracking(params)
+        const data = await api.tracking(this.generateParams(args))
 
         switch(seriesID) {   
             case 1: this.setState({series: this.processData(seriesID, data, args.type, visible)}); break;
@@ -74,20 +69,22 @@ export default class Trends extends Component {
         return series;
     }
 
-    async updateMonthlyData() {
-        var monthlyArgs = this.state.monthlyArgs
-
-        let params = {}
-        if(monthlyArgs.source) params.source = monthlyArgs.source
-        if(monthlyArgs.feature_version) params.feature_version = monthlyArgs.feature_version
-        if(monthlyArgs.jvm_impl) params.jvm_impl = monthlyArgs.jvm_impl
-
-        const data = await api.monthly(params)
+    async updateMonthlyData(args) {
+        const data = await api.monthly(this.generateParams(args))
 
         var monthlyData = {}
-        data.forEach(data => monthlyData[this.parseMonth(data.month)] = data[monthlyArgs.type])
+        data.forEach(data => monthlyData[this.parseMonth(data.month)] = data[args.type])
 
         this.setState({monthlyData})
+    }
+
+    generateParams(args) {
+        let params = {}
+        if(args.source) params.source = args.source
+        if(args.feature_version) params.feature_version = args.feature_version
+        if(args.jvm_impl) params.jvm_impl = args.jvm_impl
+
+        return params;
     }
 
     parseMonth(month) {
@@ -97,24 +94,13 @@ export default class Trends extends Component {
         return monthNames[b[1] - 1] + " " + b[0]
     }
 
-    renderFilters(seriesID, args) {
-        return <div className="filters">
-            <div className="column">
-                <div>Type</div>
-                <Radio.Group name={"type"}
-                    defaultValue={args.type}
-                    onChange={e => {args.type = e.target.value; this.updateData(seriesID, args)}}
-                    options={[
-                        { label: 'Daily', value: 'daily' },
-                        { label: 'Total', value: 'total' }
-                    ]}
-                />
-            </div>
+    renderFilters(args, updateFunc) {
+        return <> 
             <div className="column">
                 <div>Source</div>
                 <Radio.Group name={"source"}
                     defaultValue={args.source}
-                    onChange={e => {args.source = e.target.value; this.updateData(seriesID, args)}}
+                    onChange={e => {args.source = e.target.value; updateFunc()}}
                     options={[
                         { label: 'None', value: undefined },
                         { label: 'Github', value: 'github' },
@@ -126,7 +112,7 @@ export default class Trends extends Component {
                 <div>Feature Version*</div>
                 <Radio.Group name={"feature_version"}
                     defaultValue={args.feature_version}
-                    onChange={e => {args.feature_version = e.target.value; this.updateData(seriesID, args)}}
+                    onChange={e => {args.feature_version = e.target.value; updateFunc()}}
                     options={[
                         { label: 'None', value: undefined },
                         { label: 'JDK 8', value: 8 },
@@ -143,7 +129,7 @@ export default class Trends extends Component {
                 <div>JVM Impl*</div>
                 <Radio.Group name={"jvm_impl"}
                     defaultValue={args.jvm_impl}
-                    onChange={e => {args.jvm_impl = e.target.value; this.updateData(seriesID, args)}}
+                    onChange={e => {args.jvm_impl = e.target.value; updateFunc()}}
                     options={[
                         { label: 'None', value: undefined },
                         { label: 'HotSpot', value: 'hotspot' },
@@ -151,65 +137,40 @@ export default class Trends extends Component {
                     ]}
                 />
             </div>
-        </div>
+        </>
     }
 
-    renderMonthlyFilters() {
-        var monthlyArgs = this.state.monthlyArgs
-
+    renderTrackingFilters(args, updateFunc) {
         return <div className="filters">
             <div className="column">
                 <div>Type</div>
                 <Radio.Group name={"type"}
-                    defaultValue={monthlyArgs.type}
-                    onChange={e => {monthlyArgs.type = e.target.value; this.updateMonthlyData()}}
+                    defaultValue={args.type}
+                    onChange={e => {args.type = e.target.value; updateFunc()}}
+                    options={[
+                        { label: 'Daily', value: 'daily' },
+                        { label: 'Total', value: 'total' }
+                    ]}
+                />
+            </div>
+            {this.renderFilters(args, updateFunc)}
+        </div>
+    }
+
+    renderMonthlyFilters(args, updateFunc) {
+        return <div className="filters">
+             <div className="column">
+                <div>Type</div>
+                <Radio.Group name={"type"}
+                    defaultValue={args.type}
+                    onChange={e => {args.type = e.target.value; updateFunc()}}
                     options={[
                         { label: 'Monthly', value: 'monthly' },
                         { label: 'Total', value: 'total' }
                     ]}
                 />
             </div>
-            <div className="column">
-                <div>Source</div>
-                <Radio.Group name={"source"}
-                    defaultValue={monthlyArgs.source}
-                    onChange={e => {monthlyArgs.source = e.target.value; this.updateMonthlyData()}}
-                    options={[
-                        { label: 'None', value: undefined },
-                        { label: 'Github', value: 'github' },
-                        { label: 'Docker', value: 'dockerhub' }
-                    ]}
-                />
-            </div>
-            <div className="column">
-                <div>Feature Version*</div>
-                <Radio.Group name={"feature_version"}
-                    defaultValue={monthlyArgs.feature_version}
-                    onChange={e => {monthlyArgs.feature_version = e.target.value; this.updateMonthlyData()}}
-                    options={[
-                        { label: 'None', value: undefined },
-                        { label: 'JDK 8', value: 8 },
-                        { label: 'JDK 9', value: 9 },
-                        { label: 'JDK 10', value: 10 },
-                        { label: 'JDK 11', value: 11 },
-                        { label: 'JDK 12', value: 12 },
-                        { label: 'JDK 13', value: 13 },
-                        { label: 'JDK 14', value: 14 },
-                    ]}
-                />
-            </div>
-            <div className="column">
-                <div>JVM Impl*</div>
-                <Radio.Group name={"jvm_impl"}
-                    defaultValue={monthlyArgs.jvm_impl}
-                    onChange={e => {monthlyArgs.jvm_impl = e.target.value; this.updateMonthlyData()}}
-                    options={[
-                        { label: 'None', value: undefined },
-                        { label: 'HotSpot', value: 'hotspot' },
-                        { label: 'OpenJ9', value: 'openj9' }
-                    ]}
-                />
-            </div>
+            {this.renderFilters(args, updateFunc)}
         </div>
     }
 
@@ -225,12 +186,12 @@ export default class Trends extends Component {
         return <>
             <LineChart series={fullSeries} categories={state.categories} name="Tracking Trends" />
             <div className="filters-box">
-                {this.renderFilters(1, state.args)}
-                {this.renderFilters(2, state.args2)}
+                {this.renderTrackingFilters(state.args, () => {this.updateData(1, state.args)} )}
+                {this.renderTrackingFilters(state.args2, () => {this.updateData(2, state.args2)})}
             </div>
             <BarChart data={state.monthlyData} name="Monthly Trends" />
             <div className="filters-box">
-                {this.renderMonthlyFilters()}
+                {this.renderMonthlyFilters(state.monthlyArgs, () => {this.updateMonthlyData(state.monthlyArgs)})}
             </div>
             <p>*Does not include results from the Official Docker Repo</p>
         </>
