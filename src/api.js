@@ -1,6 +1,6 @@
 import { get } from "./utils";
 
-//var address = "https://api.adoptopenjdk.net/"
+// var address = "https://api.adoptopenjdk.net/"
 var address = "http://localhost:8080/"
 
 export const api = {

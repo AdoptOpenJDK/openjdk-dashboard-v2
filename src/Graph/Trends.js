@@ -3,7 +3,7 @@ import { api } from "../api";
 import LineChart from "./LineChart";
 import BarChart from "./BarChart";
 import moment from 'moment';
-import { Radio, Slider } from 'antd';
+import { Radio, Slider, Checkbox } from 'antd';
 import './Trends.css';
 
 export default class Trends extends Component {
@@ -12,13 +12,16 @@ export default class Trends extends Component {
         series2: undefined,
         monthlyData: undefined,
         categories: undefined,
+        categories2: undefined,
         args: {
+            visible: true,
             type: 'daily',
             source: undefined,
             feature_version: undefined,
             jvm_impl: undefined
         },
         args2: {
+            visible: false,
             type: 'daily',
             source: undefined,
             feature_version: undefined,
@@ -34,37 +37,41 @@ export default class Trends extends Component {
     };
 
     async componentDidMount() {
-        this.updateData(1, this.state.args);
-        this.updateData(2, this.state.args2, false);
-        this.updateMonthlyData(this.state.monthlyArgs);
+        await this.updateData(1, this.state.args);
+        await this.updateData(2, this.state.args2);
+        await this.updateMonthlyData(this.state.monthlyArgs);
     }
 
-    async updateData(seriesID, args, visible = true) {
+    async updateData(seriesID, args) {
         const data = await api.tracking(this.generateParams(args))
 
         switch(seriesID) {   
-            case 1: this.setState({series: this.processData(seriesID, data, args.type, visible)}); break;
-            case 2: this.setState({series2: this.processData(seriesID, data, args.type, visible)}); break;
+            case 1: this.setState({series: this.processData(seriesID, data, args.type, args.visible)}); break;
+            case 2: this.setState({series2: this.processData(seriesID, data, args.type, args.visible)}); break;
         }
 
         if (data.length > 0) {
             const categories = data.map(({ date }) => moment(date).format('DD-MM-YYYY'));
-            this.setState({categories})
+
+            switch(seriesID) {   
+                case 1: this.setState({categories: categories}); break;
+                case 2: this.setState({categories2: categories}); break;
+            }
         }
     }
 
-    processData(seriesID, data, type, visibleTatal = false) {
+    processData(seriesID, data, type, visible) {
         var typeData;
         switch(type) {
             case 'daily': typeData = data.map(({ daily }) => daily); break;
             case 'total': typeData = data.map(({ total }) => total); break;
         }
 
-        const series = [{
+        const series = {
             name: "Series " + seriesID,
             data: typeData,
-            visible: (data.length != 0) && visibleTatal
-        }];
+            visible: (data.length != 0) && visible
+        };
 
         return series;
     }
@@ -144,6 +151,12 @@ export default class Trends extends Component {
     renderTrackingFilters(args, updateFunc) {
         return <div className="filters">
             <div className="column">
+                <div>Visible</div>
+                <Checkbox defaultChecked={args.visible}
+                    onChange={e => {args.visible = e.target.checked; updateFunc()}}
+                />
+            </div>
+            <div className="column">
                 <div>Type</div>
                 <Radio.Group name={"type"}
                     defaultValue={args.type}
@@ -175,17 +188,49 @@ export default class Trends extends Component {
         </div>
     }
 
+
+    myMethod(state, diff) {
+        for (var i=0; i< diff; i++) {
+            state.data.unshift(null)
+        }
+
+        return state
+    }
+
+    max(arr1, arr2) {
+        if (arr1.length > arr2.length) {
+            return arr1
+        } else {
+            return arr2
+        }
+    }
+
     render() {
         let state = this.state;
     
         if (!state.series || !state.series2 || !state.monthlyData) return null;
 
+
+        // pull all of this in function
+        state.series.data.splice(0, state.series.data.lastIndexOf(null)+1)
+        state.series2.data.splice(0, state.series2.data.lastIndexOf(null)+1)
+
+        let diff = state.series.data.length - state.series2.data.length;
         let fullSeries = []
-        Array.prototype.push.apply(fullSeries, state.series)
-        Array.prototype.push.apply(fullSeries, state.series2)
+
+        if(diff>0) {
+            fullSeries = [state.series, this.myMethod(state.series2, diff)]
+
+        } else if (diff<0) {
+            fullSeries = [this.myMethod(state.series, -diff), state.series2]
+
+        } else {
+            fullSeries = [state.series, state.series2]
+        }
+        //
 
         return <>
-            <LineChart series={fullSeries} categories={state.categories} name="Tracking Trends" />
+            <LineChart series={fullSeries} categories={this.max(state.categories, state.categories2)} name="Tracking Trends" />
             <div className="filters-box">
                 {this.renderTrackingFilters(state.args, () => {this.updateData(1, state.args)} )}
                 {this.renderTrackingFilters(state.args2, () => {this.updateData(2, state.args2)})}
