@@ -188,8 +188,27 @@ export default class Trends extends Component {
         </div>
     }
 
+    createSeries(series, series2) {
+        series.data.splice(0, series.data.lastIndexOf(null)+1)
+        series2.data.splice(0, series2.data.lastIndexOf(null)+1)
 
-    myMethod(state, diff) {
+        let diff = series.data.length - series2.data.length;
+        let fullSeries = []
+
+        if(diff>0) {
+            fullSeries = [series, this.padArray(series2, diff)]
+
+        } else if (diff<0) {
+            fullSeries = [this.padArray(series, -diff), series2]
+
+        } else {
+            fullSeries = [series, series2]
+        }
+
+        return fullSeries
+    }
+
+    padArray(state, diff) {
         for (var i=0; i< diff; i++) {
             state.data.unshift(null)
         }
@@ -210,27 +229,8 @@ export default class Trends extends Component {
     
         if (!state.series || !state.series2 || !state.monthlyData) return null;
 
-
-        // pull all of this in function
-        state.series.data.splice(0, state.series.data.lastIndexOf(null)+1)
-        state.series2.data.splice(0, state.series2.data.lastIndexOf(null)+1)
-
-        let diff = state.series.data.length - state.series2.data.length;
-        let fullSeries = []
-
-        if(diff>0) {
-            fullSeries = [state.series, this.myMethod(state.series2, diff)]
-
-        } else if (diff<0) {
-            fullSeries = [this.myMethod(state.series, -diff), state.series2]
-
-        } else {
-            fullSeries = [state.series, state.series2]
-        }
-        //
-
         return <>
-            <LineChart series={fullSeries} categories={this.max(state.categories, state.categories2)} name="Tracking Trends" />
+            <LineChart series={this.createSeries(state.series, state.series2)} categories={this.max(state.categories, state.categories2)} name="Tracking Trends" />
             <div className="filters-box">
                 {this.renderTrackingFilters(state.args, () => {this.updateData(1, state.args)} )}
                 {this.renderTrackingFilters(state.args2, () => {this.updateData(2, state.args2)})}
