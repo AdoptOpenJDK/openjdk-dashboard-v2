@@ -16,16 +16,15 @@ export default class Trends extends Component {
             type: 'daily',
             source: undefined,
             feature_version: undefined,
-            jvm_impl: undefined,
-            days: 30
+            jvm_impl: undefined
         },
         args2: {
             type: 'daily',
             source: undefined,
             feature_version: undefined,
-            jvm_impl: undefined,
-            days: 30
+            jvm_impl: undefined
         },
+        days: 30,
         monthlyArgs: {
             type: 'monthly',
             source: undefined,
@@ -84,7 +83,7 @@ export default class Trends extends Component {
         if(args.source) params.source = args.source
         if(args.feature_version) params.feature_version = args.feature_version
         if(args.jvm_impl) params.jvm_impl = args.jvm_impl
-        if(args.days) params.days = args.days
+        params.days = this.state.days
 
         return params;
     }
@@ -156,14 +155,6 @@ export default class Trends extends Component {
                 />
             </div>
             {this.renderFilters(args, updateFunc)}
-            <div className="column days">
-                <div>Days</div>
-                <Slider 
-                    defaultValue={args.days} 
-                    max={180}
-                    onAfterChange={value => {args.days = value; updateFunc()}}
-                />
-            </div>
         </div>
     }
 
@@ -198,6 +189,14 @@ export default class Trends extends Component {
             <div className="filters-box">
                 {this.renderTrackingFilters(state.args, () => {this.updateData(1, state.args)} )}
                 {this.renderTrackingFilters(state.args2, () => {this.updateData(2, state.args2)})}
+                <div className="column days">
+                    <div>Days</div>
+                    <Slider 
+                        defaultValue={state.days} 
+                        max={180}
+                        onAfterChange={value => {state.days = value; this.updateData(1, this.state.args); this.updateData(2, this.state.args2)}}
+                    />
+                </div>
             </div>
             <BarChart data={state.monthlyData} name="Monthly Trends" />
             <div className="filters-box">
