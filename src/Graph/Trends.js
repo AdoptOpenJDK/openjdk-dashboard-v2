@@ -244,7 +244,7 @@ export default class Trends extends Component {
                 <div className="column days">
                     <div>Days</div>
                     <Slider 
-                        defaultValue={state.days} 
+                        defaultValue={state.days}
                         max={180}
                         onAfterChange={value => {state.days = value; this.updateData(1, this.state.args); this.updateData(2, this.state.args2)}}
                     />
