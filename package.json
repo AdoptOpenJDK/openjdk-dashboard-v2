@@ -13,7 +13,7 @@
 		"parcel-bundler": "^1.12.4"
 	},
 	"dependencies": {
-		"antd": "^3.26.18",
+		"antd": "^5.1.6",
 		"express": "^4.17.3",
 		"highcharts": "^9.0.0",
 		"highcharts-react-official": "^2.2.2",
