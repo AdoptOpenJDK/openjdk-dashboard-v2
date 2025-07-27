@@ -1,29 +1,30 @@
 {
 	"name": "react-starter",
 	"version": "1.0.0",
-	"main": "index.js",
 	"license": "Apache License Version 2.0",
 	"scripts": {
-		"start": "node server.js",
-		"build": "parcel build index.html && cp CNAME 404.html dist/"
+		"start": "parcel index.html --port 3000",
+		"build": "parcel build index.html && cp CNAME 404.html dist/",
+		"serve": "node server.js"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.10.2",
-		"@babel/plugin-proposal-class-properties": "^7.10.1",
-		"parcel-bundler": "^1.12.4"
+		"@babel/core": "^7.28.0",
+		"@babel/plugin-transform-class-properties": "^7.27.1",
+		"parcel": "^2.15.4"
 	},
 	"dependencies": {
-		"antd": "^3.26.18",
-		"express": "^4.17.3",
-		"highcharts": "^9.0.0",
-		"highcharts-react-official": "^2.2.2",
-		"http-proxy-middleware": "^0.19.2",
+		"@ant-design/icons": "^6.0.0",
+		"antd": "^5.26.6",
+		"express": "^4.21.2",
+		"express-rate-limit": "^8.0.1",
+		"highcharts": "^11.4.8",
+		"highcharts-react-official": "^3.2.2",
+		"http-proxy-middleware": "^3.0.5",
 		"lodash": "^4.17.21",
-		"moment": "^2.29.4",
-		"react": "^16.13.1",
-		"react-dom": "^16.13.1",
-		"react-router": "^5.2.0",
-		"react-router-dom": "^5.2.0",
-		"static-server": "^2.2.1"
+		"moment": "^2.30.1",
+		"react": "^19.1.0",
+		"react-dom": "^19.1.0",
+		"react-router": "^6.30.1",
+		"react-router-dom": "^6.30.1"
 	}
 }

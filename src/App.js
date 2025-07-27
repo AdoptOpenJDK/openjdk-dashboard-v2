@@ -1,30 +1,25 @@
-import React, { Component } from 'react';
-import { Route } from 'react-router';
+import React, { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { ConfigProvider, Layout, Menu, Icon } from 'antd';
-import enUS from 'antd/lib/locale-provider/en_US';
+import { ConfigProvider, Layout, Menu } from 'antd';
+import { CloudDownloadOutlined, LineChartOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import enUS from 'antd/locale/en_US';
 import ErrorBoundary from './ErrorBoundary';
 import { Download, Trends } from './Graph/';
 
-import 'antd/dist/antd.css';
-import AdoptLogo from './Adoptlogo.svg';
+import AdoptLogo from 'url:./Adoptlogo.svg';
 
-const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 
-export default class extends Component {
-	state = {
-		collapsed: false,
+export default function App() {
+	const [collapsed, setCollapsed] = useState(false);
+
+	const toggle = () => {
+		setCollapsed(!collapsed);
 	};
 
-	toggle = () => {
-		this.setState({
-			collapsed: !this.state.collapsed,
-		});
-	};
-
-	render() {
-		return <ConfigProvider locale={enUS}>
+	return (
+		<ConfigProvider locale={enUS}>
 			<Layout>
 				<Header className="header" style={{ background: '#152935' }}>
 					<div className="logo" />
@@ -33,41 +28,60 @@ export default class extends Component {
 						mode="horizontal"
 						defaultSelectedKeys={['2']}
 						style={{ lineHeight: '64px', background: '#152935' }}
-					>
-						<Menu.Item key="1"><a href="https://adoptopenjdk.net/" style={{ height: '100%', display: 'flex' }}><img src={AdoptLogo} /></a></Menu.Item>
-						<Menu.Item key="2"><Link to="/download">Download Stats</Link></Menu.Item>
-					</Menu>
-
+						items={[
+							{
+								key: '1',
+								label: (
+									<a href="https://adoptopenjdk.net/" style={{ height: '100%', display: 'flex' }}>
+										<img src={AdoptLogo} alt="Adopt Logo" />
+									</a>
+								)
+							},
+							{
+								key: '2',
+								label: <Link to="/download">Download Stats</Link>
+							}
+						]}
+					/>
 				</Header>
 				<Layout>
-					<Sider width={200} style={{ background: '#fff' }} trigger={null} collapsible collapsed={this.state.collapsed}>
+					<Sider width={200} style={{ background: '#fff' }} trigger={null} collapsible collapsed={collapsed}>
 						<Menu
 							mode="inline"
 							defaultSelectedKeys={['1']}
 							defaultOpenKeys={['sub1']}
 							style={{ height: '100%', borderRight: 0, marginTop: 20 }}
-						>
-							<Menu.Item key="1"><Link to="/download"><Icon type="cloud-download" />Download</Link></Menu.Item>
-							<Menu.Item key="2"><Link to="/trends"><Icon type="line-chart" />Trends</Link></Menu.Item>
-
-						</Menu>
+							items={[
+								{
+									key: '1',
+									icon: <CloudDownloadOutlined />,
+									label: <Link to="/download">Download</Link>
+								},
+								{
+									key: '2',
+									icon: <LineChartOutlined />,
+									label: <Link to="/trends">Trends</Link>
+								}
+							]}
+						/>
 					</Sider>
 					<Layout style={{ padding: '0 24px 24px' }}>
 						<ErrorBoundary>
 							<Content style={{ background: '#fff', padding: 24, margin: 0, minHeight: 280 }}>
-								<Icon
-									className="trigger"
-									type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
-									onClick={this.toggle}
-								/>
-								<Route exact path="/" component={Download} />
-								<Route path="/download" component={Download} />
-								<Route path="/trends" component={Trends} />
+								{React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
+									className: "trigger",
+									onClick: toggle
+								})}
+								<Routes>
+									<Route path="/" element={<Download />} />
+									<Route path="/download" element={<Download />} />
+									<Route path="/trends" element={<Trends />} />
+								</Routes>
 							</Content>
 						</ErrorBoundary>
 					</Layout>
 				</Layout>
 			</Layout>
 		</ConfigProvider>
-	}
+	);
 }

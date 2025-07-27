@@ -1,29 +1,23 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import drilldown from "highcharts/modules/drilldown.js";
+import HighchartsDrilldown from "highcharts/modules/drilldown";
 import './Graph.css';
 import { api } from "../api";
 
-drilldown(Highcharts);
+HighchartsDrilldown(Highcharts);
 
-export default class ColumnDrilldown extends Component {
-    allowChartUpdate = true;
-    state = {
-        seriesData: undefined,
-        drilldownSeries: undefined,
+export default function ColumnDrilldown({ data, name }) {
+    const chartComponentRef = useRef(null);
+    const allowChartUpdate = useRef(true);
+    const [seriesData, setSeriesData] = useState(undefined);
+    const [drilldownSeries, setDrilldownSeries] = useState(undefined);
+
+    const categoryClicked = () => {
+        allowChartUpdate.current = false;
     };
 
-    async componentDidMount() {
-        await this.updateData();
-    }
-
-    categoryClicked() {
-        this.allowChartUpdate = false;
-    }
-
-    async updateData() {
-        const { data } = this.props;
+    const updateData = async () => {
         if (data) {
             const drilldownSeries = [];
             const secondLevelDrilldownSeries = [];
@@ -61,69 +55,70 @@ export default class ColumnDrilldown extends Component {
                 }
             }));
             drilldownSeries.push(...secondLevelDrilldownSeries);
-            this.setState({ seriesData, drilldownSeries });
+            setSeriesData(seriesData);
+            setDrilldownSeries(drilldownSeries);
         }
+    };
 
-    }
+    useEffect(() => {
+        updateData();
+    }, [data]);
 
-    render() {
-        const { seriesData, drilldownSeries } = this.state;
-        if (!seriesData || !drilldownSeries) return null;
+    if (!seriesData || !drilldownSeries) return null;
 
-        const { name } = this.props;
-        const options = {
-            chart: {
-                type: "column",
-            },
+    const options = {
+        chart: {
+            type: "column",
+        },
+        title: {
+            text: name
+        },
+        subtitle: {
+            text: 'Click the columns to view the version specific data. Data is from: <a href="https://api.adoptopenjdk.net/" target="_blank" rel="noopener noreferrer">api.adoptopenjdk.net</a>',
+            useHTML: true,
+        },
+        xAxis: {
+            type: 'category'
+        },
+        yAxis: {
             title: {
-                text: name
-            },
-            subtitle: {
-                text: 'Click the columns to view the version specific data. Data is from: <a href="https://api.adoptopenjdk.net/" target="_blank" rel="noopener noreferrer">api.adoptopenjdk.net</a>',
-                useHTML: true,
-            },
-            xAxis: {
-                type: 'category'
-            },
-            yAxis: {
-                title: {
-                    text: 'Downloads'
-                }
-            },
-            plotOptions: {
-                column: {
-                    dataLabels: {
-                        enabled: true,
-                        format: '{point.y}'
-                    },
-                    pointPadding: 0.2,
-                    borderWidth: 0,
-                    minPointLength: 10,
-                    shadow: true
-                },
-            },
-            series: [
-                {
-                    events: {
-                        click: e => {
-                            this.categoryClicked(e);
-                        }
-                    },
-                    name: "JDK Versions",
-                    data: seriesData
-                }
-            ],
-            drilldown: {
-                series: drilldownSeries
+                text: 'Downloads'
             }
-        };
-        return <div className="chart">
-            <HighchartsReact
-                allowChartUpdate={this.allowChartUpdate}
-                ref={"chartComponent"}
-                highcharts={Highcharts}
-                options={options}
-            />
-        </div>;
-    }
+        },
+        plotOptions: {
+            column: {
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y}'
+                },
+                pointPadding: 0.2,
+                borderWidth: 0,
+                minPointLength: 10,
+                shadow: true
+            },
+        },
+        series: [
+            {
+                events: {
+                    click: e => {
+                        categoryClicked(e);
+                    }
+                },
+                name: "JDK Versions",
+                data: seriesData
+            }
+        ],
+        drilldown: {
+            series: drilldownSeries
+        }
+    };
+
+    return <div className="chart">
+        <HighchartsReact
+            allowChartUpdate={allowChartUpdate.current}
+            ref={chartComponentRef}
+            highcharts={Highcharts}
+            options={options}
+        />
+    </div>;
 }
